@@ -6,7 +6,7 @@ class Webinar():
 
     @staticmethod
     def view_webinar():
-        Webinar_list = []
+        webinar_list = []
         try:
             webinar_data = list(mongo.db.webinar_data.find({}))
             for webinar in webinar_data:
