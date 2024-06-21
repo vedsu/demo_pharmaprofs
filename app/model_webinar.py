@@ -17,6 +17,7 @@ class Webinar():
                 "topic":webinar["topic"],
                 "industry":webinar["industry"],
                 "speaker":webinar["speaker"],
+                "website":webinar["website"],
                 "date":webinar["date_time"],
                 "time":webinar["time"],
                 "timeZone":webinar["timeZone"],
