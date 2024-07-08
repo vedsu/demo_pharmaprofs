@@ -57,7 +57,7 @@ class Webinar():
     def view_webinar():
         webinar_list = []
         try:
-            webinar_data = list(mongo.db.webinar_data.find({}))
+            webinar_data = list(mongo.db.webinar_data.find({"status":"Active"}))
             for webinar in webinar_data:
                 webinar_dict = {
 
