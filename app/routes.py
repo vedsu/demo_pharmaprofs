@@ -9,6 +9,8 @@ from app.model_speaker import Speaker
 from app.model_order import Order
 import string
 import random
+import datetime
+import pytz
 from app import s3_client, s3_resource
 
 
@@ -55,31 +57,59 @@ def user_login():
             # session["user_email"] = login_email
             # session["user_type"] = login_type            
         return response_login
+
+
+
+
+
+def get_current_time_ist():
+    # Define the IST timezone
+    ist_timezone = pytz.timezone('Asia/Kolkata')
+    
+    # Get the current time in UTC
+    utc_now = datetime.datetime.utcnow()
+    
+    # Convert the UTC time to IST
+    ist_now = utc_now.astimezone(ist_timezone)
+    
+    # Format the time as desired
+    formatted_ist_now = ist_now.strftime("%Y-%m-%d %H:%M:%S")
+    
+    return formatted_ist_now
     
 @app.route('/order', methods = ['POST'])
 def order():
     paymentstatus = None
+    current_time_ist = None
+    invoice_number = None
     session = []
     id = len(list(mongo.db.order_data.find({})))+1
     if request.method in 'POST':
         
         customeremail = request.form.get('customeremail')
         paymentstatus = request.form.get("paymentstatus")
+        orderdate =  request.form.get("orderdate")
+        ordertime = request.form.get("ordertime")
+        ordertimezone = request.form.get("ordertimezone")
         if paymentstatus == "purchased":
+            current_time_ist = get_current_time_ist()
             N= 3
             res = ''.join(random.choices(string.ascii_uppercase + string.digits, k=N))
             bucket_name = "vedsubrandwebsite"
-            object_key = customeremail.split('@')[0]+"_"+res
-            s3_url = f"https://{bucket_name}.s3.amazonaws.com/order/{object_key}.pdf"
+            invoice_number = request.form.get("invoice_number")
+            object_key = customeremail.split('@')[0]+"_"+invoice_number
+            s3_url = f"https://{bucket_name}.s3.amazonaws.com/websiteorder/{object_key}.pdf"
             invoice = request.files.get("invoice")
             s3_client.put_object(
                 Body = invoice,
                 Bucket = bucket_name,
-                Key = f'order/{object_key}.pdf'
+                Key = f'websiteorder/{object_key}.pdf'
             )
 
             document = s3_url
+        
         else:
+            
             document = ""
 
         sessionLive =  request.form.get("sessionLive") #True /False
@@ -111,6 +141,9 @@ def order():
             "customeremail":  request.form.get("customeremail"), # Login email
             "paymentstatus": paymentstatus,
             "orderdate": request.form.get("orderdate"),
+            "ordertime": request.form.get("ordertime"),
+            "ordertimezone" = request.form.get("ordertimezone"),
+            
             "webinardate": request.form.get("webinardate"),
             "session": session,# Array
             "sessionLive": request.form.get("sessionLive"), #True /False
@@ -130,7 +163,9 @@ def order():
             "zipcode": request.form.get("zipcode"),
             "address" : request.form.get("address"),
             "website": request.form.get("website"), # Current Website
-            "document" : document
+            "document" : document,
+            "ist_time" : current_time_ist,
+            "invoice_number" : invoice_number,
             }
         
 
