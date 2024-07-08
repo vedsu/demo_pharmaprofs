@@ -142,7 +142,7 @@ def order():
             "paymentstatus": paymentstatus,
             "orderdate": request.form.get("orderdate"),
             "ordertime": request.form.get("ordertime"),
-            "ordertimezone" = request.form.get("ordertimezone"),
+            "ordertimezone" : request.form.get("ordertimezone"),
             
             "webinardate": request.form.get("webinardate"),
             "session": session,# Array
