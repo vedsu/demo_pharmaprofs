@@ -20,7 +20,14 @@ def home():
     speaker_list= Speaker.view_speaker()
     return jsonify(webinar_list, speaker_list)
 
-
+@app.route('/<w_id>/<website>', methods= ['GET','PUT','POST','DELETE'])
+def view_webinar(w_id,website):    
+    
+    webinar_data = Webinar.data_webinar(w_id,website)
+    
+    if request.method in ['GET']:
+        
+        return webinar_data,200
 
 @app.route('/register', methods = ['POST'])
 def user_register():
