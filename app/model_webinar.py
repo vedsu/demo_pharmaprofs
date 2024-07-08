@@ -10,7 +10,7 @@ class Webinar():
         webinar_info = None
         try: 
             
-            webinar_data = list(mongo.db.webinar_data.find({"$and":[{"id":w_id}, {"website":website}]}))
+            webinar_data = list(mongo.db.webinar_data.find({"$and":[{"webinar_url":w_id}, {"website":website}]}))
             webinar = webinar_data[0]
                
             webinar_data_dict ={
