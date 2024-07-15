@@ -26,9 +26,9 @@ def contact_us():
             msg = Message('Query', sender = 'registration@pharmaprofs.com', recipients = [query_email])
             msg.body = f"We have received a query from {name} ({email}) \n Message: {message}.\n"
             mail.send(msg)
-            return {"Message": "Your query has been successfully received. Our team will reach out to you shortly."}
+            return {"Message": "Thanks for contacting us. Our team will reach out to you shortly."}
         except Exception as e:
-            return {"Message": "Failed to receive your query. Please try again later."}
+            return {"Message": "Failed to receive your request. Please try again later."}
             # return {"Message": str(e)}
 
 @app.route('/speakeropportunity', methods = ['POST'])
