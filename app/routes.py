@@ -12,7 +12,22 @@ import random
 import datetime
 import pytz
 from app import s3_client, s3_resource
+from flask_mail import Message
 
+@app.route('/contactus', methods = ['POST'])
+def contact_us():
+    if request.method in 'POST':
+        query_email = "support@pharmaprofs.com"
+        name = request.form.get("Name")
+        email = request.form.get("Email")
+        message = request.form.get("Message")
+        try:
+            msg = Message('Query', sender = 'registration@pharmaprofs.com', recipients = [query_email])
+            msg.body = f"We have received a query from {name} ({email}) \n Message: {message}.\n"
+            mail.send(msg)
+            return {"Message": "Your query has been successfully received. Our team will reach out to you shortly."}
+        except:
+            return {"Message": "Failed to receive your query. Please try again later."}
 
 @app.route('/')
 def home():
