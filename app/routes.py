@@ -31,6 +31,26 @@ def contact_us():
             return {"Message": "Failed to receive your query. Please try again later."}
             # return {"Message": str(e)}
 
+@app.route('/speakeropportunity', methods = ['POST'])
+def speaker_opportunity():
+    if request.method in 'POST':
+        query_email = "brian@pharmaprofs.com"
+        name = request.form.get("Name")
+        email = request.form.get("Email")
+        education = request.form.get("Education")
+        country = request.form.get("Country")
+        phone = request.form.get("Phone")
+        industries = request.form.get("Industries")
+        bio = request.form.get("Bio")
+        try:
+            msg = Message('Speaker Opportunity', sender = 'registration@pharmaprofs.com', recipients = [query_email])
+            msg.body = f"We have received Speaker Opportunity Query from {name} ({email}) \n Details: {education}.\n {country}.\n {phone}.\n {industries}.\n BIO : {bio}"
+            mail.send(msg)
+            return {"Message": "Your query has been successfully received. Our team will reach out to you shortly."}
+        except Exception as e:
+            return {"Message": "Failed to receive your query. Please try again later."}
+
+
 @app.route('/')
 def home():
     speaker_list = []
