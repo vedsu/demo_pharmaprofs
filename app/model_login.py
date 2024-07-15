@@ -17,8 +17,8 @@ class Login():
                 return ({"success": False, "message": "User already registered, Please Login"}),403
             else:
                 try:
-                    msg = Message('Hello', sender = 'shubham.srivastava@vedsu.com', recipients = [register_email])
-                    msg.body = "Hello Flask message sent from Flask-Mail"
+                    msg = Message('Hello', sender = 'registration@pharmaprofs.com', recipients = [register_email])
+                    msg.body = f"Welcome to PharmProfs. Here are your Login Credentials for https://www.pharmaprofs.com/speaker-opportunity.php \n Username: {register_email}, Password: {register_password}.\n"
                     mail.send(msg)
                     if register_type == "Attendee":
                         mongo.db.user_data.insert_one({"email":register_email, "password":register_password, "UserType": register_type, "website":website,"history_purchased":[], "history_pending":[]})
