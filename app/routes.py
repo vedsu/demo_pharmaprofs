@@ -13,6 +13,7 @@ import datetime
 import pytz
 from app import s3_client, s3_resource
 from flask_mail import Message
+from app import mail
 
 @app.route('/contactus', methods = ['POST'])
 def contact_us():
@@ -27,8 +28,8 @@ def contact_us():
             mail.send(msg)
             return {"Message": "Your query has been successfully received. Our team will reach out to you shortly."}
         except Exception as e:
-            # return {"Message": "Failed to receive your query. Please try again later."}
-            return {"Message": str(e)}
+            return {"Message": "Failed to receive your query. Please try again later."}
+            # return {"Message": str(e)}
 
 @app.route('/')
 def home():
