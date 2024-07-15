@@ -26,8 +26,9 @@ def contact_us():
             msg.body = f"We have received a query from {name} ({email}) \n Message: {message}.\n"
             mail.send(msg)
             return {"Message": "Your query has been successfully received. Our team will reach out to you shortly."}
-        except:
-            return {"Message": "Failed to receive your query. Please try again later."}
+        except Exception as e:
+            # return {"Message": "Failed to receive your query. Please try again later."}
+            return {"Message": str(e)}
 
 @app.route('/')
 def home():
