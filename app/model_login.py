@@ -18,7 +18,8 @@ class Login():
             else:
                 try:
                     msg = Message('Hello', sender = 'registration@pharmaprofs.com', recipients = [register_email])
-                    msg.body = f"Welcome to PharmProfs. Here are your Login Credentials for https://www.pharmaprofs.com/speaker-opportunity.php \n Username: {register_email}, Password: {register_password}.\n"
+                    msg.body = f"Welcome to PharmProfs. Here are your Login Credentials for https://www.pharmaprofs.com/speaker-opportunity.php \nUsername: {register_email}, Password: {register_password}.\n"
+                    # msg.body = f"Welcome to PharmProfs. Here are your Login Credentials for https://www.pharmaprofs.com/speaker-opportunity.php \n Username: {register_email}, Password: {register_password}.\n"
                     mail.send(msg)
                     if register_type == "Attendee":
                         mongo.db.user_data.insert_one({"email":register_email, "password":register_password, "UserType": register_type, "website":website,"history_purchased":[], "history_pending":[]})
