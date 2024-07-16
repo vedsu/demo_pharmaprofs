@@ -7,6 +7,7 @@ from app.model_login import Login
 from app.model_webinar import Webinar
 from app.model_speaker import Speaker
 from app.model_order import Order
+from app.model_order import Utility
 import string
 import random
 import datetime
@@ -14,6 +15,22 @@ import pytz
 from app import s3_client, s3_resource
 from flask_mail import Message
 from app import mail
+
+
+@app.route('/subscribe', methods = ['POST'])
+def subscribe():
+    if request.method in 'POST':
+        subscribe r= request.form.get("Subscriber")
+        response = Utility.subscribe(subscriber)
+        return response
+
+@app.route('/unsubscribe', methods = ['POST'])
+def subscribe():
+    if request.method in 'POST':
+        unsubscriber = request.form.get("Unsubscriber")
+        response = Utility.unsubscribe(unsubscriber)
+        return response
+    
 
 @app.route('/contactus', methods = ['POST'])
 def contact_us():
