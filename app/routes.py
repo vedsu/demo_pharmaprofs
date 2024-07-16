@@ -7,7 +7,7 @@ from app.model_login import Login
 from app.model_webinar import Webinar
 from app.model_speaker import Speaker
 from app.model_order import Order
-from app.model_order import Utility
+from app.model_utility import Utility
 import string
 import random
 import datetime
