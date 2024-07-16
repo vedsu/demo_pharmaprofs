@@ -18,17 +18,17 @@ from app import mail
 
 
 @app.route('/subscribe', methods = ['POST'])
-def subscribe():
+def subscriber():
     if request.method in 'POST':
-        subscriber= request.form.get("Subscriber")
-        response = Utility.subscribe(subscriber)
+        subscriber = request.form.get("Subscriber")
+        response = Utility.subscribe_list(subscriber)
         return response
 
 @app.route('/unsubscribe', methods = ['POST'])
-def subscribe():
+def unsubscriber():
     if request.method in 'POST':
         unsubscriber = request.form.get("Unsubscriber")
-        response = Utility.unsubscribe(unsubscriber)
+        response = Utility.unsubscribe_list(unsubscriber)
         return response
     
 
