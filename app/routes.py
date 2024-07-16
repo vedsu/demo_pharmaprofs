@@ -20,7 +20,7 @@ from app import mail
 @app.route('/subscribe', methods = ['POST'])
 def subscribe():
     if request.method in 'POST':
-        subscribe r= request.form.get("Subscriber")
+        subscriber= request.form.get("Subscriber")
         response = Utility.subscribe(subscriber)
         return response
 
