@@ -3,7 +3,7 @@ from app import mongo
 from datetime import datetime, timedelta
 
 class Utility():
-  @staticmethod
+    @staticmethod
     def subscribe(subscriber):
        current_datetime = datetime.now()
        try:
@@ -12,7 +12,7 @@ class Utility():
        except Exception as e:
             return ({"success": False, "message": str(e)}), 403
 
-  @staticmethod
+    @staticmethod
     def unsubscribe(unsubscriber):
        current_datetime = datetime.now()
        try:
