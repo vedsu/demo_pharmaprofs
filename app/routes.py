@@ -15,6 +15,31 @@ import pytz
 from app import s3_client, s3_resource
 from flask_mail import Message
 from app import mail
+import stripe
+
+
+@app.route('/create-payment-intent', methods=['POST'])
+def create_payment_intent():
+    stripe.api_key = "sk_test_51JXJIaSDGul0mPyRe6KWPSiOSDA5hdlLz2ZsgOos682WNi41cIrdmdXPtb12lXss6KJP4DR5DUQt7KRsbEnSLkG600zLJgEhLx"
+    data = request.json
+    try:
+        intent = stripe.PaymentIntent.create(
+            amount=data['amount']*100,
+            currency='usd',
+            payment_method_types=['card'],
+        )
+        # Convert the Unix timestamp to a readable format
+        created_time = datetime.datetime.fromtimestamp(intent['created']).astimezone()
+        # created_date = created_time.date().isoformat()
+        # created_time_only = created_time.time().isoformat()
+        # created_time_zone = str(created_time.tzinfo)
+        return jsonify({
+            'clientSecret': intent['client_secret'],
+            'amount' : data['amount'],
+            'date_time': created_time
+        })
+    except Exception as e:
+        return jsonify(error=str(e)), 403
 
 
 @app.route('/subscribe', methods = ['POST'])
