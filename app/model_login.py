@@ -3,12 +3,18 @@
 from app import mongo
 from app import mail
 from flask_mail import Message
+from flask import render_template_string
 
 class Login():
 
     @staticmethod
     def register(register_email, register_password, register_confirmpassword, register_type, website):
-
+        
+        # Create WebsiteUrl for respective Websites
+        if website=="PHARMAPROFS":
+            websiteUrl = "https://pharmaprofs.com/"
+        else: 
+            websiteUrl = " "
         
         if register_password == register_confirmpassword:
 
@@ -17,15 +23,54 @@ class Login():
                 return ({"success": False, "message": "User already registered, Please Login"}),403
             else:
                 try:
-                    msg = Message('Hello', sender = 'registration@pharmaprofs.com', recipients = [register_email])
-                    msg.body = f"Welcome to PharmProfs. Here are your Login Credentials for https://www.pharmaprofs.com/speaker-opportunity.php \nUsername: {register_email}, Password: {register_password}.\n"
-                    # msg.body = f"Welcome to PharmProfs. Here are your Login Credentials for https://www.pharmaprofs.com/speaker-opportunity.php \n Username: {register_email}, Password: {register_password}.\n"
+                    msg = Message('Your Account Credentials', sender = 'registration@pharmaprofs.com', recipients = [register_email])
+                    
+                    msg.body = f"""
+                                   Dear Customer,
+
+                                   Welcome to our website!
+
+                                   Here are your account credentials:
+
+                                   Email: {register_email}
+                                   Password: {register_password}
+                                   Website: {websiteUrl}
+
+                                   Please keep this information secure and do not share it with anyone.
+
+                                   Thanks & Regards!
+                                   Webinar Organizer Team
+                                   
+                                   """
+                    msg.html = render_template_string("""
+                                   <p>Dear Customer,</p>
+                                   <p>Welcome to our website!</p>
+                                   <p>Here are your account credentials:</p>
+                                   <ul>
+                                        <li><b>Email:</b> {{ email }}</li>
+                                        <li><b>Password:</b> {{ password }}</li>
+                                        <li><b>Website:</b> <a href="{{ website }}">{{ website }}</a></li>
+                                   </ul>
+                                   <p>Please keep this information secure and do not share it with anyone.</p>
+                                   <p>Thanks & Regards!<br>Webinar Organizer Team</p>
+                                   """, email=register_email, password=register_password, website=websiteUrl)
                     mail.send(msg)
+                    
                     if register_type == "Attendee":
-                        mongo.db.user_data.insert_one({"email":register_email, "password":register_password, "UserType": register_type, "website":website,"history_purchased":[], "history_pending":[]})
+                        try:
+                            mongo.db.user_data.insert_one({"email":register_email, "password":register_password, "UserType": register_type, "website":website,"history_purchased":[], "history_pending":[]})
+                            return ({"success": True, "message": "user registered successfully, email sent"}),201
+                        except Exception as e:
+                            return ({"success": False, "message": str(e)}),403
+
                     else:
-                        mongo.db.user_data.insert_one({"email":register_email, "password":register_password, "UserType": register_type, "website":website})
-                    return ({"success": True, "message": "user registered successfully, email sent"}),201
+                        
+                        try:
+                            mongo.db.user_data.insert_one({"email":register_email, "password":register_password, "UserType": register_type, "website":website})
+                            return ({"success": True, "message": "user registered successfully, email sent"}),201
+                        except Exception as e:
+                            return ({"success": False, "message": str(e)}),403
+
                 except Exception as e:
                     return ({"success": False, "message": str(e)}),403
         else:
