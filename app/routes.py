@@ -1,7 +1,7 @@
 
 from app import app
 from app import mongo
-from flask import request, jsonify, session
+from flask import request, jsonify, session, render_template_string
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from app.model_login import Login
 from app.model_webinar import Webinar
@@ -16,6 +16,9 @@ from app import s3_client, s3_resource
 from flask_mail import Message
 from app import mail
 import stripe
+import json
+
+
 
 
 @app.route('/create-payment-intent', methods=['POST'])
@@ -35,12 +38,11 @@ def create_payment_intent():
         # created_time_zone = str(created_time.tzinfo)
         return jsonify({
             'clientSecret': intent['client_secret'],
-            'amount' : data['amount'],
+            'amount' : data['amount']/100,
             'date_time': created_time
         })
     except Exception as e:
         return jsonify(error=str(e)), 403
-
 
 @app.route('/subscribe', methods = ['POST'])
 def subscriber():
@@ -63,10 +65,37 @@ def contact_us():
         query_email = "support@pharmaprofs.com"
         name = request.form.get("Name")
         email = request.form.get("Email")
-        message = request.form.get("Message")
+        message_content = request.form.get("Message")
         try:
-            msg = Message('Query', sender = 'registration@pharmaprofs.com', recipients = [query_email])
-            msg.body = f"We have received a query from {name} ({email}) \n Message: {message}.\n"
+            msg = Message('Query',
+                  sender='registration@pharmaprofs.com',
+                  recipients=[query_email])
+
+            msg.body = f"""
+            Dear Team,
+
+            We have received a query from:
+
+            Name: {name}
+            Email: {email}
+            Message: {message_content}
+
+            Best regards
+           
+            """
+
+            msg.html = render_template_string("""
+            <p>Dear Team,</p>
+            <p>We have received a query from:</p>
+            <ul>
+                <li><b>Name:</b> {{ name }}</li>
+                <li><b>Email:</b> {{ email }}</li>
+            </ul>
+            <p><b>Message:</b></p>
+            <p>{{ message_content }}</p>
+            <p>Best regards<br></p>
+            """, name=name, email=email, message_content=message_content)
+
             mail.send(msg)
             return {"Message": "Thanks for contacting us. Our team will reach out to you shortly."}
         except Exception as e:
@@ -85,9 +114,44 @@ def speaker_opportunity():
         industries = request.form.get("Industries")
         bio = request.form.get("Bio")
         try:
-            msg = Message('Speaker Opportunity', sender = 'registration@pharmaprofs.com', recipients = [query_email])
-            msg.body = f"We have received Speaker Opportunity Query from {name} ({email}) \n Details: {education}.\n {country}.\n {phone}.\n {industries}.\n BIO : {bio}"
+            msg = Message('Speaker Opportunity',
+                  sender='registration@pharmaprofs.com',
+                  recipients=[query_email])
+            msg.body = f"""
+                Dear Team,
+
+                We have received a new speaker opportunity query from:
+
+                Name: {name}
+                Email: {email}
+                Education: {education}
+                Country: {country}
+                Phone: {phone}
+                Industries: {industries}
+                BIO: {bio}
+
+                Best regards
+                
+               """
+            msg.html = render_template_string("""
+            <p>Dear Team,</p>
+            <p>We have received a new speaker opportunity query from:</p>
+            <ul>
+                <li><b>Name:</b> {{ name }}</li>
+                <li><b>Email:</b> {{ email }}</li>
+                <li><b>Education:</b> {{ education }}</li>
+                <li><b>Country:</b> {{ country }}</li>
+                <li><b>Phone:</b> {{ phone }}</li>
+                <li><b>Industries:</b> {{ industries }}</li>
+                <li><b>BIO:</b> {{ bio }}</li>
+            </ul>
+            <p>Best regards,<br></p>
+            """, name=name, email=email, education=education, country=country, phone=phone, industries=industries, bio=bio)
+
             mail.send(msg)
+            # msg = Message('Speaker Opportunity', sender = 'registration@pharmaprofs.com', recipients = [query_email])
+            # msg.body = f"We have received Speaker Opportunity Query from {name} ({email}) \n Details: {education}.\n {country}.\n {phone}.\n {industries}.\n BIO : {bio}"
+            # mail.send(msg)
             return {"Message": "Your query has been successfully received. Our team will reach out to you shortly."}
         except Exception as e:
             return {"Message": "Failed to receive your query. Please try again later."}
@@ -138,7 +202,14 @@ def user_login():
         return response_login
 
 
+@app.route('/forgotpassword', methods =['POST'])
+def forgot_password():
+    if request.method in "POST":
+        email = request.form.get("Email")
+        website = request.form.get("Website")
 
+        response = Utility.forgotpassword(email, website)
+        return response
 
 
 def get_current_time_ist():
@@ -167,9 +238,13 @@ def order():
         
         customeremail = request.form.get('customeremail')
         paymentstatus = request.form.get("paymentstatus")
-        orderdate =  request.form.get("orderdate")
-        ordertime = request.form.get("ordertime")
-        ordertimezone = request.form.get("ordertimezone")
+        billingemail = request.form.get("billingemail")
+        website = request.form.get("website")
+        Webinar = request.form.get("topic")
+        orderamount =  request.form.get("orderamount")
+        # orderdate =  request.form.get("orderdate")
+        # ordertime = request.form.get("ordertime")
+        # ordertimezone = request.form.get("ordertimezone")
         if paymentstatus == "purchased":
             current_time_ist = get_current_time_ist()
             N= 3
@@ -216,8 +291,8 @@ def order():
         
         order_data = {
             "id":id,
-            "topic": request.form.get("topic"),
-            "customeremail":  request.form.get("customeremail"), # Login email
+            "topic": Webinar,
+            "customeremail":  customeremail, # Login email
             "paymentstatus": paymentstatus,
             "orderdate": request.form.get("orderdate"),
             "ordertime": request.form.get("ordertime"),
@@ -234,14 +309,14 @@ def order():
             "sessionTranscript":request.form.get("sessionTranscript"), # True or False
             "priceTranscript": request.form.get('priceTranscript'),
             "customername":request.form.get("customername"),
-            "billingemail": request.form.get("billingemail"),
-            "orderamount": request.form.get("orderamount"),
+            "billingemail": billingemail,
+            "orderamount": orderamount,
             "country": request.form.get("country"),
             "state": request.form.get("state"),
             "city": request.form.get("city"),
             "zipcode": request.form.get("zipcode"),
             "address" : request.form.get("address"),
-            "website": request.form.get("website"), # Current Website
+            "website": website , # Current Website
             "document" : document,
             "ist_time" : current_time_ist,
             "invoice_number" : invoice_number,
@@ -249,12 +324,66 @@ def order():
         
 
         response_order, response_user = Order.update_order(order_data), Login.user_order(request.form.get("customeremail"), paymentstatus, request.form.get("topic")) 
+        if paymentstatus == "purchased":
+                # Create WebsiteUrl for respective Websites
+            if website=="PHARMAPROFS":
+                websiteUrl = "https://pharmaprofs.com/"
+            else: 
+                websiteUrl = " "
+            # Extract keys and store them as a comma-separated string
+            keys = [list(item.keys())[0] for item in session]
+            comma_separated_keys = ', '.join(keys)
+            try:
+                msg = Message('Order Confirmation and Thank You',
+                    sender='registration@pharmaprofs.com',
+                    recipients=[billingemail],
+                    bcc=['fulfillmentteam@aol.com'])
+
+                msg.body = f"""
+                Dear Customer,
+
+                Thank you for your order!
+
+                Here are your Order Details:
+                Webinar Name: {Webinar}
+                Order Amount: {orderamount}
+                Session: {comma_separated_keys}
+                Invoice: {document}
+                Website: {websiteUrl}
+
+
+                We appreciate your business and look forward to seeing you at the webinar.
+
+                Thanks & Regards!
+                Fullfillment Team
+                """
+
+                msg.html = render_template_string("""
+                <p>Dear Customer,</p>
+                <p>Thank you for your order!</p>
+                <p><b>Here are your Order Details:</b></p>
+                <ul>
+                    <li><b>Webinar Name:</b> {{ webinar_name }}</li>
+                    <li><b>Order Amount:</b> {{ order_amount }}</li>
+                    <li><b>Session:</b> {{ session }}</li>
+                    <li><b>Invoice:</b> <a href="{{ s3_link }}">{{ s3_link }}</a></li>
+                    <li><b>Website:</b> <a href="{{ website_url }}">{{ website_url }}</a></li>
+                </ul>
+                <p>We appreciate your business and look forward to seeing you at the webinar.</p>
+                <p>Thanks & Regards!<br>Fullfillment Team</p>
+                """, webinar_name=Webinar, s3_link=document, session=comma_separated_keys, order_amount=orderamount, website_url=websiteUrl)
+
+                mail.send(msg)
+                response_confirmationmail = {"success":True, "message":"Confimation mail delivered"}
+            except Exception as e:
+                response_confirmationmail = {"success":False,"message":str(e)}
+        
         # if response_order is success then send a confirmation mail for order and dashboard link directly for login
         # Also send link via mail to dashboard login along side email and password for attendee and speaker after registration 
         #  
         # update ordered webinar in history_purchased or history_pending
 
-        return jsonify(response_order, response_user)
+        return jsonify(response_order, response_user, response_confirmationmail)
 
 
 @app.route('/dashboard/<email>/<user_type>', methods =['GET'])
