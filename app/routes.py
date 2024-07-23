@@ -229,162 +229,165 @@ def get_current_time_ist():
     
 @app.route('/order', methods = ['POST'])
 def order():
-    paymentstatus = None
-    current_time_ist = None
-    invoice_number = None
-    session = []
-    id = len(list(mongo.db.order_data.find({})))+1
-    if request.method in 'POST':
-        
-        customeremail = request.form.get('customeremail')
-        paymentstatus = request.form.get("paymentstatus")
-        billingemail = request.form.get("billingemail")
-        website = request.form.get("website")
-        Webinar = request.form.get("topic")
-        orderamount =  request.form.get("orderamount")
-        # orderdate =  request.form.get("orderdate")
-        # ordertime = request.form.get("ordertime")
-        # ordertimezone = request.form.get("ordertimezone")
-        if paymentstatus == "purchased":
-            current_time_ist = get_current_time_ist()
-            N= 3
-            res = ''.join(random.choices(string.ascii_uppercase + string.digits, k=N))
-            bucket_name = "vedsubrandwebsite"
-            invoice_number = request.form.get("invoice_number")
-            object_key = customeremail.split('@')[0]+"_"+invoice_number
-            s3_url = f"https://{bucket_name}.s3.amazonaws.com/websiteorder/{object_key}.pdf"
-            invoice = request.files.get("invoice")
-            s3_client.put_object(
-                Body = invoice,
-                Bucket = bucket_name,
-                Key = f'websiteorder/{object_key}.pdf'
-            )
-
-            document = s3_url
-        
-        else:
+    try: 
+        paymentstatus = None
+        current_time_ist = None
+        invoice_number = None
+        session = []
+        id = len(list(mongo.db.order_data.find({})))+1
+        if request.method in 'POST':
             
-            document = ""
-
-        sessionLive =  request.form.get("sessionLive") #True /False
-        priceLive = request.form.get('priceLive')
-        
-        if sessionLive == "True":
-            session.append({"Live": priceLive})
-        sessionRecording = request.form.get("sessionRecording") # True/ False
-        priceRecording = request.form.get('priceRecording')
-        
-        if sessionRecording == "True":
-            session.append({"Recording": priceRecording})
-        sessionDigitalDownload = request.form.get('sessionDigitalDownload') # True or False
-        priceDigitalDownload =  request.form.get('priceDigitalDownload')
-        
-        if sessionDigitalDownload == "True":
-            session.append({"DigitalDownload": priceDigitalDownload})
-        sessionTranscript = request.form.get("sessionTranscript") # True or False
-        priceTranscript = request.form.get('priceTranscript')
-        
-        if sessionTranscript == "True":
-            session.append({"Transcript":priceTranscript})
-        
-        
-        
-        order_data = {
-            "id":id,
-            "topic": Webinar,
-            "customeremail":  customeremail, # Login email
-            "paymentstatus": paymentstatus,
-            "orderdate": request.form.get("orderdate"),
-            "ordertime": request.form.get("ordertime"),
-            "ordertimezone" : request.form.get("ordertimezone"),
+            customeremail = request.form.get('customeremail')
+            paymentstatus = request.form.get("paymentstatus")
+            billingemail = request.form.get("billingemail")
+            website = request.form.get("website")
+            Webinar = request.form.get("topic")
+            orderamount =  request.form.get("orderamount")
+            # orderdate =  request.form.get("orderdate")
+            # ordertime = request.form.get("ordertime")
+            # ordertimezone = request.form.get("ordertimezone")
+            if paymentstatus == "purchased":
+                current_time_ist = get_current_time_ist()
+                N= 3
+                res = ''.join(random.choices(string.ascii_uppercase + string.digits, k=N))
+                bucket_name = "vedsubrandwebsite"
+                invoice_number = request.form.get("invoice_number")
+                object_key = customeremail.split('@')[0]+"_"+invoice_number
+                s3_url = f"https://{bucket_name}.s3.amazonaws.com/websiteorder/{object_key}.pdf"
+                invoice = request.files.get("invoice")
+                s3_client.put_object(
+                    Body = invoice,
+                    Bucket = bucket_name,
+                    Key = f'websiteorder/{object_key}.pdf'
+                )
+    
+                document = s3_url
             
-            "webinardate": request.form.get("webinardate"),
-            "session": session,# Array
-            "sessionLive": request.form.get("sessionLive"), #True /False
-            "priceLive": request.form.get('priceLive'),
-            "sessionRecording":request.form.get("sessionRecording"), # True/ False
-            "priceRecording": request.form.get('priceRecording'),
-            "sessionDigitalDownload":request.form.get('sessionDigitalDownload'), # True or False
-            "priceDigitalDownload": request.form.get('priceDigitalDownload'),
-            "sessionTranscript":request.form.get("sessionTranscript"), # True or False
-            "priceTranscript": request.form.get('priceTranscript'),
-            "customername":request.form.get("customername"),
-            "billingemail": billingemail,
-            "orderamount": orderamount,
-            "country": request.form.get("country"),
-            "state": request.form.get("state"),
-            "city": request.form.get("city"),
-            "zipcode": request.form.get("zipcode"),
-            "address" : request.form.get("address"),
-            "website": website , # Current Website
-            "document" : document,
-            "ist_time" : current_time_ist,
-            "invoice_number" : invoice_number,
-            }
-        
-
-        response_order, response_user = Order.update_order(order_data), Login.user_order(request.form.get("customeremail"), paymentstatus, request.form.get("topic")) 
-        if paymentstatus == "purchased":
-                # Create WebsiteUrl for respective Websites
-            if website=="PHARMAPROFS":
-                websiteUrl = "https://pharmaprofs.com/"
-            else: 
-                websiteUrl = " "
-            # Extract keys and store them as a comma-separated string
-            keys = [list(item.keys())[0] for item in session]
-            comma_separated_keys = ', '.join(keys)
-            try:
-                msg = Message('Order Confirmation and Thank You',
-                    sender='registration@pharmaprofs.com',
-                    recipients=[billingemail],
-                    bcc=['fulfillmentteam@aol.com'])
-
-                msg.body = f"""
-                Dear Customer,
-
-                Thank you for your order!
-
-                Here are your Order Details:
-                Webinar Name: {Webinar}
-                Order Amount: {orderamount}
-                Session: {comma_separated_keys}
-                Invoice: {document}
-                Website: {websiteUrl}
-
-
-                We appreciate your business and look forward to seeing you at the webinar.
-
-                Thanks & Regards!
-                Fullfillment Team
-                """
-
-                msg.html = render_template_string("""
-                <p>Dear Customer,</p>
-                <p>Thank you for your order!</p>
-                <p><b>Here are your Order Details:</b></p>
-                <ul>
-                    <li><b>Webinar Name:</b> {{ webinar_name }}</li>
-                    <li><b>Order Amount:</b> {{ order_amount }}</li>
-                    <li><b>Session:</b> {{ session }}</li>
-                    <li><b>Invoice:</b> <a href="{{ s3_link }}">{{ s3_link }}</a></li>
-                    <li><b>Website:</b> <a href="{{ website_url }}">{{ website_url }}</a></li>
-                </ul>
-                <p>We appreciate your business and look forward to seeing you at the webinar.</p>
-                <p>Thanks & Regards!<br>Fullfillment Team</p>
-                """, webinar_name=Webinar, s3_link=document, session=comma_separated_keys, order_amount=orderamount, website_url=websiteUrl)
-
-                mail.send(msg)
-                response_confirmationmail = {"success":True, "message":"Confimation mail delivered"}
-            except Exception as e:
-                response_confirmationmail = {"success":False,"message":str(e)}
-        
-        # if response_order is success then send a confirmation mail for order and dashboard link directly for login
-        # Also send link via mail to dashboard login along side email and password for attendee and speaker after registration 
-        #  
-        # update ordered webinar in history_purchased or history_pending
-
-        return jsonify(response_order, response_user, response_confirmationmail)
-
+            else:
+                
+                document = ""
+    
+            sessionLive =  request.form.get("sessionLive") #True /False
+            priceLive = request.form.get('priceLive')
+            
+            if sessionLive == "True":
+                session.append({"Live": priceLive})
+            sessionRecording = request.form.get("sessionRecording") # True/ False
+            priceRecording = request.form.get('priceRecording')
+            
+            if sessionRecording == "True":
+                session.append({"Recording": priceRecording})
+            sessionDigitalDownload = request.form.get('sessionDigitalDownload') # True or False
+            priceDigitalDownload =  request.form.get('priceDigitalDownload')
+            
+            if sessionDigitalDownload == "True":
+                session.append({"DigitalDownload": priceDigitalDownload})
+            sessionTranscript = request.form.get("sessionTranscript") # True or False
+            priceTranscript = request.form.get('priceTranscript')
+            
+            if sessionTranscript == "True":
+                session.append({"Transcript":priceTranscript})
+            
+            
+            
+            order_data = {
+                "id":id,
+                "topic": Webinar,
+                "customeremail":  customeremail, # Login email
+                "paymentstatus": paymentstatus,
+                "orderdate": request.form.get("orderdate"),
+                "ordertime": request.form.get("ordertime"),
+                "ordertimezone" : request.form.get("ordertimezone"),
+                
+                "webinardate": request.form.get("webinardate"),
+                "session": session,# Array
+                "sessionLive": request.form.get("sessionLive"), #True /False
+                "priceLive": request.form.get('priceLive'),
+                "sessionRecording":request.form.get("sessionRecording"), # True/ False
+                "priceRecording": request.form.get('priceRecording'),
+                "sessionDigitalDownload":request.form.get('sessionDigitalDownload'), # True or False
+                "priceDigitalDownload": request.form.get('priceDigitalDownload'),
+                "sessionTranscript":request.form.get("sessionTranscript"), # True or False
+                "priceTranscript": request.form.get('priceTranscript'),
+                "customername":request.form.get("customername"),
+                "billingemail": billingemail,
+                "orderamount": orderamount,
+                "country": request.form.get("country"),
+                "state": request.form.get("state"),
+                "city": request.form.get("city"),
+                "zipcode": request.form.get("zipcode"),
+                "address" : request.form.get("address"),
+                "website": website , # Current Website
+                "document" : document,
+                "ist_time" : current_time_ist,
+                "invoice_number" : invoice_number,
+                }
+            
+    
+            response_order, response_user = Order.update_order(order_data), Login.user_order(request.form.get("customeremail"), paymentstatus, request.form.get("topic")) 
+            if paymentstatus == "purchased":
+                    # Create WebsiteUrl for respective Websites
+                if website=="PHARMAPROFS":
+                    websiteUrl = "https://pharmaprofs.com/"
+                else: 
+                    websiteUrl = " "
+                # Extract keys and store them as a comma-separated string
+                keys = [list(item.keys())[0] for item in session]
+                comma_separated_keys = ', '.join(keys)
+                try:
+                    msg = Message('Order Confirmation and Thank You',
+                        sender='registration@pharmaprofs.com',
+                        recipients=[billingemail],
+                        bcc=['fulfillmentteam@aol.com'])
+    
+                    msg.body = f"""
+                    Dear Customer,
+    
+                    Thank you for your order!
+    
+                    Here are your Order Details:
+                    Webinar Name: {Webinar}
+                    Order Amount: {orderamount}
+                    Session: {comma_separated_keys}
+                    Invoice: {document}
+                    Website: {websiteUrl}
+    
+    
+                    We appreciate your business and look forward to seeing you at the webinar.
+    
+                    Thanks & Regards!
+                    Fullfillment Team
+                    """
+    
+                    msg.html = render_template_string("""
+                    <p>Dear Customer,</p>
+                    <p>Thank you for your order!</p>
+                    <p><b>Here are your Order Details:</b></p>
+                    <ul>
+                        <li><b>Webinar Name:</b> {{ webinar_name }}</li>
+                        <li><b>Order Amount:</b> {{ order_amount }}</li>
+                        <li><b>Session:</b> {{ session }}</li>
+                        <li><b>Invoice:</b> <a href="{{ s3_link }}">{{ s3_link }}</a></li>
+                        <li><b>Website:</b> <a href="{{ website_url }}">{{ website_url }}</a></li>
+                    </ul>
+                    <p>We appreciate your business and look forward to seeing you at the webinar.</p>
+                    <p>Thanks & Regards!<br>Fullfillment Team</p>
+                    """, webinar_name=Webinar, s3_link=document, session=comma_separated_keys, order_amount=orderamount, website_url=websiteUrl)
+    
+                    mail.send(msg)
+                    response_confirmationmail = {"success":True, "message":"Confimation mail delivered"}
+                except Exception as e:
+                    response_confirmationmail = {"success":False,"message":str(e)}
+            
+            # if response_order is success then send a confirmation mail for order and dashboard link directly for login
+            # Also send link via mail to dashboard login along side email and password for attendee and speaker after registration 
+            #  
+            # update ordered webinar in history_purchased or history_pending
+    
+            return jsonify(response_order, response_user, response_confirmationmail)
+    except Exception as e:
+            return jsonify({"error": str(e)}), 500
+      
 
 @app.route('/dashboard/<email>/<user_type>', methods =['GET'])
 def dashboard(email, user_type):
