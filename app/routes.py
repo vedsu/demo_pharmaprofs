@@ -234,7 +234,7 @@ def order():
         current_time_ist = None
         invoice_number = None
         session = []
-        response_confirmationmail = {"success":False,"message":"Order Not Placed}
+        response_confirmationmail = {"success":False,"message":"Order Not Placed"}
         id = len(list(mongo.db.order_data.find({})))+1
         if request.method in 'POST':
             
