@@ -38,7 +38,7 @@ def create_payment_intent():
         # created_time_zone = str(created_time.tzinfo)
         return jsonify({
             'clientSecret': intent['client_secret'],
-            'amount' : data['amount']/100,
+            'amount' : data['amount'],
             'date_time': created_time
         })
     except Exception as e:
@@ -235,6 +235,10 @@ def order():
         invoice_number = None
         session = []
         response_confirmationmail = {"success":False,"message":"Order Not Placed"}
+        orderdate =  None
+        ordertime =  None
+        ordertimezone = None
+        
         id = len(list(mongo.db.order_data.find({})))+1
         if request.method in 'POST':
             
@@ -244,6 +248,7 @@ def order():
             website = request.form.get("website")
             Webinar = request.form.get("topic")
             orderamount =  request.form.get("orderamount")
+            order_datetimezone = request.form.get("order_datetimezone")
             # orderdate =  request.form.get("orderdate")
             # ordertime = request.form.get("ordertime")
             # ordertimezone = request.form.get("ordertimezone")
