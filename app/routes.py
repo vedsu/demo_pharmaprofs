@@ -235,9 +235,11 @@ def order():
         invoice_number = None
         session = []
         response_confirmationmail = {"success":False,"message":"Order Not Placed"}
-        orderdate =  None
-        ordertime =  None
-        ordertimezone = None
+        # Get the current time in UTC
+        now_utc = datetime.now(pytz.utc)
+        orderdate =  now_utc.date()
+        ordertime =  now_utc.time()
+        ordertimezone = now_utc.tzinfo
         
         id = len(list(mongo.db.order_data.find({})))+1
         if request.method in 'POST':
@@ -248,11 +250,18 @@ def order():
             website = request.form.get("website")
             Webinar = request.form.get("topic")
             orderamount =  request.form.get("orderamount")
-            order_datetimezone = request.form.get("order_datetimezone")
-            # orderdate =  request.form.get("orderdate")
-            # ordertime = request.form.get("ordertime")
-            # ordertimezone = request.form.get("ordertimezone")
             if paymentstatus == "purchased":
+                order_datetimezone = request.form.get("order_datetimezone")
+                date_time_str = order_datetimezone
+                
+                # Define the format of your date-time string
+                date_time_format = "%a, %d %b %Y %H:%M:%S %Z"
+                # Parse the date-time string into a datetime object
+                date_time_obj = datetime.strptime(date_time_str, date_time_format)
+                orderdate =  date_time_obj.date()
+                ordertime = date_time_obj.time()
+                ordertimezone = timezone = pytz.timezone('GMT')
+                
                 current_time_ist = get_current_time_ist()
                 N= 3
                 res = ''.join(random.choices(string.ascii_uppercase + string.digits, k=N))
@@ -301,9 +310,9 @@ def order():
                 "topic": Webinar,
                 "customeremail":  customeremail, # Login email
                 "paymentstatus": paymentstatus,
-                "orderdate": request.form.get("orderdate"),
-                "ordertime": request.form.get("ordertime"),
-                "ordertimezone" : request.form.get("ordertimezone"),
+                "orderdate": orderdate,
+                "ordertime": ordertime,
+                "ordertimezone" : ordertimezone,
                 
                 "webinardate": request.form.get("webinardate"),
                 "session": session,# Array
