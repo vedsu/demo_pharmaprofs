@@ -28,7 +28,7 @@ def create_payment_intent():
     try:
         intent = stripe.PaymentIntent.create(
             amount=data['amount']*100,
-            currency='usd',
+            currency='inr',
             payment_method_types=['card'],
         )
         # Convert the Unix timestamp to a readable format
