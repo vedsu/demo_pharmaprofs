@@ -19,7 +19,13 @@ import stripe
 import json
 
 
-
+@app.route('/speaker/<int:s_id>', methods =['GET'])
+def view_speakerdetails(s_id):
+    
+    if request.method in 'GET':
+        speaker_data = Speaker.data_speaker(s_id)
+       
+        return jsonify(speaker_data),200
 
 @app.route('/create-payment-intent', methods=['POST'])
 def create_payment_intent():
