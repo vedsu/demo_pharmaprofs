@@ -6,6 +6,33 @@ from datetime import datetime, timedelta
 class Speaker():
 
     @staticmethod
+    def data_speaker(s_id):
+        
+        speaker_info = None  
+        try:
+            speaker_data = list(mongo.db.speaker_data.find({"id":s_id}))
+            speaker = speaker_data[0]
+            speaker_dict={
+                "id": speaker ["id"],
+                "name": speaker ["name"],
+                "email":speaker ["email"],
+                "industry": speaker ["industry"],
+                "status": speaker ["status"],
+                "bio": speaker ["bio"],
+                "contact" :speaker ["contact"],
+                "photo": speaker["photo"],
+                "history": speaker["history"]
+            }
+            
+            speaker_info = speaker_dict
+        except Exception as e:
+            speaker_info = None 
+            
+        
+        return speaker_info
+    
+    
+    @staticmethod
     def view_speaker():
 
         speaker_list =[]
