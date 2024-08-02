@@ -18,6 +18,11 @@ from app import mail
 import stripe
 import json
 
+stripe_keys = {
+    "secret_key": "sk_test_51JXJIaSDGul0mPyRe6KWPSiOSDA5hdlLz2ZsgOos682WNi41cIrdmdXPtb12lXss6KJP4DR5DUQt7KRsbEnSLkG600zLJgEhLx",
+    "publishable_key": "pk_test_51JXJIaSDGul0mPyR3pQO5YN5uwgWFPw3tACKo1tmSKtEr5lDEcMM9dVYMuCoJPufxtQ0czgS1r41YnNliaTYnSYi00AfAi2VhM"
+}
+stripe.api_key = stripe_keys["secret_key"]
 
 @app.route('/speaker/<int:s_id>', methods =['GET'])
 def view_speakerdetails(s_id):
@@ -29,24 +34,55 @@ def view_speakerdetails(s_id):
 
 @app.route('/create-payment-intent', methods=['POST'])
 def create_payment_intent():
-    stripe.api_key = "sk_test_51JXJIaSDGul0mPyRe6KWPSiOSDA5hdlLz2ZsgOos682WNi41cIrdmdXPtb12lXss6KJP4DR5DUQt7KRsbEnSLkG600zLJgEhLx"
+    
+    
+    
+    # stripe.api_key = "sk_test_51JXJIaSDGul0mPyRe6KWPSiOSDA5hdlLz2ZsgOos682WNi41cIrdmdXPtb12lXss6KJP4DR5DUQt7KRsbEnSLkG600zLJgEhLx"
     data = request.json
+    
     try:
-        intent = stripe.PaymentIntent.create(
-            amount=data['amount']*100,
-            currency='inr',
-            payment_method_types=['card'],
+        customer = stripe.Customer.create(
+            # email = data['email'],
+            email = 'customer@example.com'
+            name = data['name'],
+            address={
+                'line1': data['address'],
+                'city': "City",
+                'state': "State",
+                'country': "IN",
+                'postal_code': 12345
+            },
+            source = data['stripeToken']
         )
-        # Convert the Unix timestamp to a readable format
-        created_time = datetime.datetime.fromtimestamp(intent['created']).astimezone()
-        # created_date = created_time.date().isoformat()
-        # created_time_only = created_time.time().isoformat()
-        # created_time_zone = str(created_time.tzinfo)
-        return jsonify({
-            'clientSecret': intent['client_secret'],
-            'amount' : data['amount'],
-            'date_time': created_time
-        })
+
+        charge = stripe.Charge.create(
+            customer=customer.id,
+            amount = data['amount']*100,
+            currency='inr',
+            description='Stripe Charge'
+        )
+        created_time = datetime.datetime.fromtimestamp(customer['created']).astimezone()
+        return jsonify({'success': True, 'amount': data['amount'], 'date_time':created_time})
+        
+        # intent = stripe.PaymentIntent.create(
+        #     amount=data['amount']*100,
+        #     currency='inr',
+        #     payment_method_types=['card'],
+        # )
+        # # Convert the Unix timestamp to a readable format
+        # created_time = datetime.datetime.fromtimestamp(intent['created']).astimezone()
+        # # created_date = created_time.date().isoformat()
+        # # created_time_only = created_time.time().isoformat()
+        # # created_time_zone = str(created_time.tzinfo)
+        # return jsonify({
+        #     'clientSecret': intent['client_secret'],
+        #     'amount' : data['amount'],
+        #     'date_time': created_time
+        # })
+    except stripe.error.CardError as e:
+        return jsonify({'success': False, 'error': str(e) })
+    except stripe.error.StripeError as e:
+        return jsonify({'success': False, 'error': str(e) })
     except Exception as e:
         return jsonify(error=str(e)), 403
 
