@@ -43,7 +43,7 @@ def create_payment_intent():
     try:
         customer = stripe.Customer.create(
             # email = data['email'],
-            email = 'customer@example.com'
+            email = 'customer@example.com',
             name = data['name'],
             address={
                 'line1': data['address'],
