@@ -46,11 +46,11 @@ def create_payment_intent():
             # email = 'customer@example.com',
             name = data['name'],
             address={
-                'line1': data['address'],
-                'city': data['city'],
-                'state': data['state'],
+                'line1': "Address",
+                'city': "City",
+                'state': "State",
                 'country': data['country'],
-                'postal_code': data['zipcode']
+                'postal_code': 444444
             },
             source = data['stripeToken']
         )
