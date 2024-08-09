@@ -2,6 +2,7 @@ blinker==1.8.2
 boto3==1.34.129
 botocore==1.34.129
 certifi==2024.7.4
+chardet==5.2.0
 charset-normalizer==3.3.2
 click==8.1.7
 colorama==0.4.6
@@ -19,11 +20,13 @@ Jinja2==3.1.4
 jmespath==1.0.1
 MarkupSafe==2.1.5
 packaging==24.1
+pillow==10.4.0
 PyJWT==2.8.0
 pymongo==4.7.3
 python-dateutil==2.9.0.post0
 python-dotenv==0.21.1
 pytz==2024.1
+reportlab==4.2.2
 requests==2.32.3
 s3fs==0.4.2
 s3transfer==0.10.1
