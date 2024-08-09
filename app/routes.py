@@ -280,6 +280,8 @@ def order():
         current_time_ist = None
         invoice_number = None
         country = None
+        customername = None
+        billingemail = None
         session = []
         response_confirmationmail = {"success":False,"message":"Order Not Placed"}
         # Get the current time in UTC
@@ -295,6 +297,8 @@ def order():
             paymentstatus = request.form.get("paymentstatus")
             website = request.form.get("website")
             Webinar = request.form.get("topic")
+            orderamount =  request.form.get("orderamount")
+            webinardate = request.form.get("webinardate")
             
     
             sessionLive =  request.form.get("sessionLive") #True /False
@@ -324,8 +328,9 @@ def order():
             
             if paymentstatus == "purchased":
                 billingemail = request.form.get("billingemail")
+                customername = request.form.get("customername")
                 country =  request.form.get("country")
-                orderamount =  request.form.get("orderamount")
+                
                 order_datetimezone = request.form.get("order_datetimezone")
                 date_time_str = order_datetimezone
                 
@@ -357,7 +362,7 @@ def order():
                 #     Key = f'websiteorder/{object_key}.pdf'
                 # )
     
-                document = "s3_url"
+                document = Utility.generate_pdf(Webinar, customername, country, websiteUrl, billingemail, date_time_str, webinardate, comma_separated_keys, orderamount, invoice_number)
             
             else:
                 
@@ -372,7 +377,7 @@ def order():
                 "ordertime": ordertime,
                 "ordertimezone" : ordertimezone,
                 
-                "webinardate": request.form.get("webinardate"),
+                "webinardate": webinardate,
                 "session": session,# Array
                 "sessionLive": request.form.get("sessionLive"), #True /False
                 "priceLive": request.form.get('priceLive'),
@@ -382,7 +387,7 @@ def order():
                 "priceDigitalDownload": request.form.get('priceDigitalDownload'),
                 "sessionTranscript":request.form.get("sessionTranscript"), # True or False
                 "priceTranscript": request.form.get('priceTranscript'),
-                "customername":request.form.get("customername"),
+                "customername": customername,
                 "billingemail": billingemail,
                 "orderamount": orderamount,
                 "country": country,
