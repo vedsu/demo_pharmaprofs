@@ -303,22 +303,23 @@ def order():
                 orderdate =  date_time_obj.date()
                 ordertime = date_time_obj.time()
                 ordertimezone = pytz.timezone('GMT')
+                invoice_number = request.form.get("invoice_number")
                 
                 current_time_ist = get_current_time_ist()
-                N= 3
-                res = ''.join(random.choices(string.ascii_uppercase + string.digits, k=N))
-                bucket_name = "vedsubrandwebsite"
-                invoice_number = request.form.get("invoice_number")
-                object_key = customeremail.split('@')[0]+"_"+invoice_number
-                s3_url = f"https://{bucket_name}.s3.amazonaws.com/websiteorder/{object_key}.pdf"
-                invoice = request.files.get("invoice")
-                s3_client.put_object(
-                    Body = invoice,
-                    Bucket = bucket_name,
-                    Key = f'websiteorder/{object_key}.pdf'
-                )
+                # Build pdf from form data 
+                # N= 3
+                # res = ''.join(random.choices(string.ascii_uppercase + string.digits, k=N))
+                # bucket_name = "vedsubrandwebsite"
+                # object_key = customeremail.split('@')[0]+"_"+invoice_number
+                # s3_url = f"https://{bucket_name}.s3.amazonaws.com/websiteorder/{object_key}.pdf"
+                # # invoice = request.files.get("invoice")
+                # s3_client.put_object(
+                #     Body = invoice,
+                #     Bucket = bucket_name,
+                #     Key = f'websiteorder/{object_key}.pdf'
+                # )
     
-                document = s3_url
+                document = "s3_url"
             
             else:
                 
