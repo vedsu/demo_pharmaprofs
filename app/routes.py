@@ -279,6 +279,7 @@ def order():
         paymentstatus = None
         current_time_ist = None
         invoice_number = None
+        country = None
         session = []
         response_confirmationmail = {"success":False,"message":"Order Not Placed"}
         # Get the current time in UTC
@@ -292,42 +293,9 @@ def order():
             
             customeremail = request.form.get('customeremail')
             paymentstatus = request.form.get("paymentstatus")
-            billingemail = request.form.get("billingemail")
             website = request.form.get("website")
             Webinar = request.form.get("topic")
-            orderamount =  request.form.get("orderamount")
-            if paymentstatus == "purchased":
-                order_datetimezone = request.form.get("order_datetimezone")
-                date_time_str = order_datetimezone
-                
-                # Define the format of your date-time string
-                date_time_format = "%a, %d %b %Y %H:%M:%S %Z"
-                # Parse the date-time string into a datetime object
-                date_time_obj = datetime.datetime.strptime(date_time_str, date_time_format)
-                orderdate =  date_time_obj.date()
-                ordertime = date_time_obj.time()
-                ordertimezone = pytz.timezone('GMT')
-                invoice_number = request.form.get("invoice_number")
-                
-                current_time_ist = get_current_time_ist()
-                # Build pdf from form data 
-                # N= 3
-                # res = ''.join(random.choices(string.ascii_uppercase + string.digits, k=N))
-                # bucket_name = "vedsubrandwebsite"
-                # object_key = customeremail.split('@')[0]+"_"+invoice_number
-                # s3_url = f"https://{bucket_name}.s3.amazonaws.com/websiteorder/{object_key}.pdf"
-                # # invoice = request.files.get("invoice")
-                # s3_client.put_object(
-                #     Body = invoice,
-                #     Bucket = bucket_name,
-                #     Key = f'websiteorder/{object_key}.pdf'
-                # )
-    
-                document = "s3_url"
             
-            else:
-                
-                document = ""
     
             sessionLive =  request.form.get("sessionLive") #True /False
             priceLive = request.form.get('priceLive')
@@ -350,7 +318,50 @@ def order():
             if sessionTranscript == "True":
                 session.append({"Transcript":priceTranscript})
             
+            # Extract keys and store them as a comma-separated string
+                keys = [list(item.keys())[0] for item in session]
+                comma_separated_keys = ', '.join(keys)
             
+            if paymentstatus == "purchased":
+                billingemail = request.form.get("billingemail")
+                country =  request.form.get("country")
+                orderamount =  request.form.get("orderamount")
+                order_datetimezone = request.form.get("order_datetimezone")
+                date_time_str = order_datetimezone
+                
+                # Define the format of your date-time string
+                date_time_format = "%a, %d %b %Y %H:%M:%S %Z"
+                # Parse the date-time string into a datetime object
+                date_time_obj = datetime.datetime.strptime(date_time_str, date_time_format)
+                orderdate =  date_time_obj.date()
+                ordertime = date_time_obj.time()
+                ordertimezone = pytz.timezone('GMT')
+                invoice_number = request.form.get("invoice_number")
+                # Create WebsiteUrl for respective Websites
+                if website=="PHARMAPROFS":
+                    websiteUrl = "https://pharmaprofs.com/"
+                else: 
+                    websiteUrl = " "
+                
+                current_time_ist = get_current_time_ist()
+                # Build pdf from form data 
+                # N= 3
+                # res = ''.join(random.choices(string.ascii_uppercase + string.digits, k=N))
+                # bucket_name = "vedsubrandwebsite"
+                # object_key = customeremail.split('@')[0]+"_"+invoice_number
+                # s3_url = f"https://{bucket_name}.s3.amazonaws.com/websiteorder/{object_key}.pdf"
+                # # invoice = request.files.get("invoice")
+                # s3_client.put_object(
+                #     Body = invoice,
+                #     Bucket = bucket_name,
+                #     Key = f'websiteorder/{object_key}.pdf'
+                # )
+    
+                document = "s3_url"
+            
+            else:
+                
+                document = ""
             
             order_data = {
                 "id":id,
@@ -374,11 +385,11 @@ def order():
                 "customername":request.form.get("customername"),
                 "billingemail": billingemail,
                 "orderamount": orderamount,
-                "country": request.form.get("country"),
-                "state": request.form.get("state"),
-                "city": request.form.get("city"),
-                "zipcode": request.form.get("zipcode"),
-                "address" : request.form.get("address"),
+                "country": country,
+                # "state": request.form.get("state"),
+                # "city": request.form.get("city"),
+                # "zipcode": request.form.get("zipcode"),
+                # "address" : request.form.get("address"),
                 "website": website , # Current Website
                 "document" : document,
                 "ist_time" : current_time_ist,
@@ -388,14 +399,8 @@ def order():
     
             response_order, response_user = Order.update_order(order_data), Login.user_order(request.form.get("customeremail"), paymentstatus, request.form.get("topic")) 
             if paymentstatus == "purchased":
-                    # Create WebsiteUrl for respective Websites
-                if website=="PHARMAPROFS":
-                    websiteUrl = "https://pharmaprofs.com/"
-                else: 
-                    websiteUrl = " "
-                # Extract keys and store them as a comma-separated string
-                keys = [list(item.keys())[0] for item in session]
-                comma_separated_keys = ', '.join(keys)
+                
+                
                 try:
                     msg = Message('Order Confirmation and Thank You',
                         sender='registration@pharmaprofs.com',
