@@ -57,7 +57,7 @@ class Webinar():
     def view_webinar():
         webinar_list = []
         try:
-            webinar_data = list(mongo.db.webinar_data.find({"status":"Active"}))
+            webinar_data = list(mongo.db.webinar_data.find({"status":"Active"}).sort("date", -1))
             for webinar in webinar_data:
                 webinar_dict = {
 
@@ -67,7 +67,7 @@ class Webinar():
                 "industry":webinar["industry"],
                 "speaker":webinar["speaker"],
                 "website":webinar["website"],
-                "date":webinar["date_time"],
+                "date":webinar["date"],
                 "time":webinar["time"],
                 "timeZone":webinar["timeZone"],
                 "duration":webinar["duration"],
