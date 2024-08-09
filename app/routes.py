@@ -89,8 +89,12 @@ def create_payment_intent():
 @app.route('/subscribe', methods = ['POST'])
 def subscriber():
     if request.method in 'POST':
-        subscriber = request.form.get("Subscriber")
-        response = Utility.subscribe_list(subscriber)
+        subscriber_email = request.form.get("Subscriber")
+        subscriber_name = request.form.get("subscriber_name")
+        subscription_type = request.form.get("subscription_type")
+        subscriber_jobtitle = request.form.get("subscriber_jobtitle")
+        
+        response = Utility.subscribe_list(subscriber_email, subscriber_name, subscription_type, subscriber_jobtitle)
         return response
 
 @app.route('/unsubscribe', methods = ['POST'])
