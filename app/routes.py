@@ -278,7 +278,7 @@ def order():
         session = []
         response_confirmationmail = {"success":False,"message":"Order Not Placed"}
         # Get the current time in UTC
-        now_utc = datetime.now(pytz.utc)
+        now_utc = datetime.datetime.now(pytz.utc)
         orderdate =  now_utc.date()
         ordertime =  now_utc.time()
         ordertimezone = now_utc.tzinfo
