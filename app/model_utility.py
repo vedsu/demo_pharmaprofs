@@ -7,10 +7,10 @@ from flask_mail import Message
 class Utility():
     
     @staticmethod
-    def subscribe_list(subscriber):
+    def subscribe_list(subscriber_email, subscriber_name, subscription_type, subscriber_jobtitle):
        current_datetime = datetime.now()
        try:
-            mongo.db.subscriber_list.insert_one({"email":subscriber, "type":"subscriber", "date":current_datetime})
+            mongo.db.subscriber_list.insert_one({"email":subscriber_email, "name":subscriber_name,"jobtitle":subscriber_jobtitle,"subscription_type":subscription_type,"type":"subscriber", "date":current_datetime})
             return ({"success": True, "message": "subscribed successfully"}),201
        except Exception as e:
             return ({"success": False, "message": str(e)}), 403
