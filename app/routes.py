@@ -42,15 +42,15 @@ def create_payment_intent():
     
     try:
         customer = stripe.Customer.create(
-            # email = data['email'],
-            email = 'customer@example.com',
+            email = data['email'],
+            # email = 'customer@example.com',
             name = data['name'],
             address={
                 'line1': data['address'],
-                'city': "City",
-                'state': "State",
-                'country': "IN",
-                'postal_code': 12345
+                'city': data['city'],
+                'state': data['state'],
+                'country': data['country'],
+                'postal_code': data['zipcode']
             },
             source = data['stripeToken']
         )
@@ -299,10 +299,10 @@ def order():
                 # Define the format of your date-time string
                 date_time_format = "%a, %d %b %Y %H:%M:%S %Z"
                 # Parse the date-time string into a datetime object
-                date_time_obj = datetime.strptime(date_time_str, date_time_format)
+                date_time_obj = datetime.datetime.strptime(date_time_str, date_time_format)
                 orderdate =  date_time_obj.date()
                 ordertime = date_time_obj.time()
-                ordertimezone = timezone = pytz.timezone('GMT')
+                ordertimezone = pytz.timezone('GMT')
                 
                 current_time_ist = get_current_time_ist()
                 N= 3
