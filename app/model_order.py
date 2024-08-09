@@ -36,6 +36,7 @@ class Order():
                     sessionDigitalDownload = order['sessionDigitalDownload'] # True or False
                     sessionTranscript = order["sessionTranscript"] # True or False
                     customername = order["customername"]
+                    document = order["document"]
 
                     if paymentstatus == "purchased":
                         projection ={"_id":0}
@@ -77,7 +78,8 @@ class Order():
                             "live_url" : live_url,
                             "recording_url": recording_url,
                             "digitaldownload_url": digitaldownload_url,
-                            "transcript_url" : transcript_url
+                            "transcript_url" : transcript_url,
+                            "document" : document
                             # "id": order ["id"],
                             # "orderdate": order["orderdate"],
                             # "webinardate": order["webinardate"],
